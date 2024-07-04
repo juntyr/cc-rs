@@ -1341,8 +1341,8 @@ impl Build {
             if Build::is_wasi_target(target.as_ref()) {
                 if let Ok(wasi_sysroot) = self.wasi_sysroot() {
                     self.cargo_output.print_metadata(&format_args!(
-                        "cargo:rustc-flags=-L {}/lib/{} -lstatic=c++ -lstatic=c++abi",
-                        Path::new(&wasi_sysroot).display(),
+                        "cargo:rustc-flags=-L {} -lstatic=c++ -lstatic=c++abi",
+                        Path::new(&wasi_sysroot).join("lib").join(target).display(),
                         target
                     ));
                 }
@@ -2897,7 +2897,7 @@ impl Build {
                     autodetect_android_compiler(target, &host, gnu, clang)
                 } else if target.contains("cloudabi") {
                     format!("{}-{}", target, traditional)
-                } else if Build::is_wasi_target(target) {
+                } else if Build::is_wasm_target(target) {
                     if self.cpp {
                         "clang++".to_string()
                     } else {
@@ -3941,7 +3941,7 @@ impl Build {
             ))
         }
     }
-    fn is_wasi_target(target: &str) -> bool {
+    fn is_wasm_target(target: &str) -> bool {
         const TARGETS: [&'static str; 7] = [
             "wasm32-wasi",
             "wasm32-wasip1",
@@ -3950,6 +3950,15 @@ impl Build {
             "wasm32-wasi-threads",
             "wasm32-unknown-wasi",
             "wasm32-unknown-unknown",
+        ];
+    }
+    fn is_wasi_target(target: &str) -> bool {
+        const TARGETS: [&'static str; 7] = [
+            "wasm32-wasi",
+            "wasm32-wasip1",
+            "wasm32-wasip1-threads",
+            "wasm32-wasip2",
+            "wasm32-wasi-threads",
         ];
         return TARGETS.contains(&target);
     }
